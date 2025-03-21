@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검사 일정 확인</title>
+	<!-- ✅ 스타일 추가 (결과창 크기 조정 및 가독성 향상) -->
+    <style>
+        .result-box {
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            min-height: 100px;  /* 최소 높이 지정 */
+        }
+    </style>
+</head>
+<body>
+    <h2>검사 일정 확인</h2>
+
+    <form method="post">
+        <label for="visit_date">초진 날짜 선택:</label>
+        <input type="date" id="visit_date" name="visit_date" value="{{ visit_date }}" required>
+
+        <br><br>
+
+        <label for="exam_list">검사 목록 입력 (쉼표로 구분):</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="text" id="exam_list" name="exam_list" value="{{ exam_list }}" required 
+                   style="width: 400px; height: 30px; font-size: 16px;">
+            <button type="button" onclick="clearFields()" style="height: 34px; font-size: 16px;">Clear</button>
+        </div>
+
+        <br>
+
+        <button type="submit" style="width: 180px; height: 40px; font-size: 18px;">검사 일정 확인</button>
+    </form>
+
+    <div id="result" class="result-box" style="font-size:18px; line-height:1.8;">
+        {{ result_text | safe }}
+    </div>
+    <hr>
+
+    <script>
+        function clearFields() {
+            document.getElementById("exam_list").value = "";
+        }
+    </script>
+	<!-- 결과 메시지 출력 -->
+	{% if result %}
+		<div class="result-box">
+			{{ result_text | safe }}
+		</div>
+	{% else %}
+		<div class="result-box" style="color: gray;">
+        📌 검사 결과를 입력 후 "검사 일정 확인" 버튼을 눌러 주세요.
+		</div>
+	{% endif %}
+
+    <hr>
+
+    <h3>📢</h3>
+    <iframe src="{{ ad_url }}" width="300" height="250"></iframe>
+	
+	<!-- Clear 버튼 기능 추가 -->
+<script>
+    function clearFields() {
+        document.getElementById("visit_date").value = "";
+        document.getElementById("exam_list").value = "";
+    }
+</script>
+
+</body>
+</html>
