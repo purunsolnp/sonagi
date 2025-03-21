@@ -3,10 +3,16 @@ import threading
 import time
 import requests
 from datetime import datetime
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory, redirect
 from 척도9 import check_exam_availability, exam_categories  # ✅ 검사 로직 및 Google Sheets 데이터 가져오기
 
 app = Flask(__name__)
+
+# ✅ 자동 리디렉션 설정 (onrender.com → psytestchecker.com)
+@app.before_request
+def redirect_to_custom_domain():
+    if "psytest-checker.onrender.com" in request.host:
+        return redirect("https://psytestchecker.com" + request.path, code=301)
 
 # ✅ ads.txt 라우트
 @app.route('/ads.txt')
