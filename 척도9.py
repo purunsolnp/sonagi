@@ -37,11 +37,15 @@ DEFAULT_AD_URL = "https://your-default-page.com"  # 네이버 애드포스트 �
 # ✅ 7개월차 시작일 계산 함수
 def calculate_seven_months_start(visit_date):
     """
-    초진일 기준으로 6개월 경과 후 다음 달 1일 (7개월차 시작일)을 계산
+    초진일 기준으로 6개월 후의 1일을 7개월차 시작일로 계산
     """
-    six_months_later = visit_date.replace(day=1) + timedelta(days=31 * 6)
-    seven_months_start = six_months_later.replace(day=1) + timedelta(days=31)
-    return seven_months_start.replace(day=1)
+    seven_months_start = (visit_date + relativedelta(months=6)).replace(day=1)
+    return seven_months_start
+
+# ✅ 테스트 (초진일: 2024-09-30)
+visit_date_test = datetime.strptime("2024-09-30", "%Y-%m-%d").date()
+seven_months_start_test = calculate_seven_months_start(visit_date_test)
+seven_months_start_test
 
 def calculate_weeks_since_initial(visit_date):
     """
@@ -84,88 +88,112 @@ def check_exam_availability(visit_date_str, selected_exams):
     - visit_date_str: 'YYYY-MM-DD' 형식의 문자열
     - selected_exams: 리스트(str) 형태의 검사 이름들
     """
-   # ✅ visit_date가 datetime.date인지 확인하고 변환을 건너뛰도록 수정
-    if isinstance(visit_date_str, str):
-        visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d").date()
-    else:
-        visit_date = visit_date_str  # 이미 datetime.date이면 그대로 사용
-    today = datetime.today().date()
-    weeks_since = (today - visit_date).days // 7
-    months_since = (today.year - visit_date.year) * 12 + (today.month - visit_date.month)
-
-    seven_months_start = calculate_seven_months_start(visit_date)
-
-    # ✅ 검사 가능 개수 설정
-    if today == visit_date:
-        max_exams = 12
-    elif today < seven_months_start:
-        max_exams = 6
-    else:
-        max_exams = 2
-
-    # ✅ 7개월차 날짜 계산
-    seven_months_date = calculate_seven_months_start(visit_date) 
-
-    # ✅ 검사 목록이 비어 있는 경우 처리 (새로운 조건 추가)
-    if not selected_exams or len(selected_exams) == 0:
-        result_text = "<h3 style='color:red; font-size:16px;'>❌ 입력한 검사가 없습니다.</h3><br>"
-
-    # ✅ 7개월차 안내 메시지 추가
-        if months_since < 7:
-            result_text += f"<h3 style='color:blue; font-size:16px;'>📅 초진일 ({visit_date}) 기준 7개월차는 {seven_months_date.year}년 {seven_months_date.month}월 {seven_months_date.day}일 입니다.</h3><br>"
+    try:
+        if isinstance(visit_date_str, str):
+            visit_date = datetime.strptime(visit_date_str, "%Y-%m-%d").date()
         else:
-            result_text += f"<h3 style='color:blue; font-size:16px;'>📅 초진일 ({visit_date}) 기준 7개월차를 경과하였습니다.</h3><br>"
+            visit_date = visit_date_str  # 이미 datetime.date이면 그대로 사용
 
-        return result_text  # ✅ 검사 목록이 없으면 여기서 결과 반환
-    
+        today = datetime.today().date()
+        months_since = (today.year - visit_date.year) * 12 + (today.month - visit_date.month) + 1
+        seven_months_start = calculate_seven_months_start(visit_date)
 
-      
-    # ✅ 1️⃣ 입력한 검사 목록 (검사 목록이 있을 때만 실행)
-    exam_info_list = []
-    category_count = {}
-    duplicate_exams = []
+        # ✅ 검사 가능 개수 설정
+        if today == visit_date:
+            max_exams = 12
+        elif today < seven_months_start:
+            max_exams = 6
+        else:
+            max_exams = 2  # 7개월차 이후
 
-    for exam in selected_exams:
-        info = exam_categories.get(exam.strip().lower())
-        if info:
-            category, level, exam_type = info
-            exam_display = f'<strong>{exam} ({category}, {level}, {exam_type})</strong>'
-            exam_info_list.append(exam_display)
+        # ✅ 7개월차 날짜 계산 (항상 출력)
+        seven_months_date = calculate_seven_months_start(visit_date)
 
-            if (category, exam_type) in category_count:
-                duplicate_exams.append(
-                    f"<span style='color:blue; font-weight:bold; font-size:16px; line-height:1.5;'>{category}({exam_type}): "
-                    f"<strong style='color:red;'>{category_count[(category, exam_type)]}</strong> & "
-                    f"<strong style='color:red;'>{exam}</strong> 중복되어 불가능합니다.</span>"
-                )
+        # ✅ 1️⃣ 결과 텍스트 시작
+        result_text = ""
+
+        # ✅ 7개월차 날짜 항상 출력 (📅 파란색)
+        result_text += f"""
+        <h3 style='color:blue; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+            📅 초진일 ({visit_date}) 기준 7개월차는 {seven_months_date.year}년 {seven_months_date.month}월 1일 입니다.
+        </h3>
+        """
+
+        # ✅ 2️⃣ 입력한 검사 목록
+        exam_info_list = []
+        invalid_exams = []
+        category_count = {}
+        duplicate_exams = []
+
+        for exam in selected_exams:
+            info = exam_categories.get(exam.strip().lower())
+            if info:
+                category, level, exam_type = info
+                exam_display = f'<strong>{exam} ({category}, {level}, {exam_type})</strong>'
+                exam_info_list.append(exam_display)
+
+                # ✅ 중복 검사 확인
+                if (category, exam_type) in category_count:
+                    duplicate_exams.append(
+                        f"<p style='color:red; font-size:16px; line-height:1.4; margin-bottom:5px;'>"
+                        f"❌ {category}({exam_type}): {category_count[(category, exam_type)]} & {exam} 중복되어 불가능합니다."
+                        f"</p>"
+                    )
+                else:
+                    category_count[(category, exam_type)] = exam
             else:
-                category_count[(category, exam_type)] = exam
+                invalid_exams.append(exam)  # ✅ 인식되지 않은 검사 추가
 
-    result_text = f"<h4 style='font-size:16px; line-height:1.5;'>📌 입력한 검사 목록:</h4><p style='font-size:16px; line-height:1.5;'>{', '.join(exam_info_list)}</p><br>"
+        result_text += f"""
+        <h4 style='font-size:16px; line-height:1.4; margin-bottom:5px;'>📌 입력한 검사 목록:</h4>
+        <p style='font-size:16px; line-height:1.4; margin-bottom:10px;'>{', '.join(exam_info_list)}</p>
+        """
 
-    # # ✅ 검사 가능 여부 메시지
-    if today == visit_date:
-        result_text += f"<h3 style='color:green;'>✅ 오늘은 초진일입니다. 최대 12개까지 가능합니다.</h3><br>"
-    elif today < seven_months_start:
-        result_text += f"<h3 style='color:green;'>✅ {weeks_since}주차입니다. 2주내에 최대 6개 검사가 가능합니다.</h3><br>"
-    else:
-        result_text += f"<h3 style='color:blue;'>🔹 {months_since}개월차: 7개월차 이후로 매월 최대 2개(3개월간 6개) 가능합니다.</h3><br>"
+        # ✅ 3️⃣ 인식하지 못한 검사 목록 표시
+        if invalid_exams:
+            result_text += f"""
+            <h3 style='color:red; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+                ❌ 인식하지 못한 검사 목록: {', '.join(invalid_exams)} (검사 목록 열람을 확인하세요)
+            </h3>
+            """
+        else:
+            result_text += """
+            <h3 style='color:green; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+                ✅ 모든 검사가 정상적으로 인식되었습니다.
+            </h3>
+            """
 
-    
-    # ✅ 3️⃣ 중복 검사 여부
-    if duplicate_exams:
-        result_text += "<h3 style='color:red; font-size:16px; line-height:1.3; margin:0; padding:0;'>❌ 중복된 평가 영역이 있습니다:</h3><br>"
-        result_text += "<br>".join(duplicate_exams)
-    else:
-        result_text += "<h3 style='color:blue; font-size:16px; line-height:1.3; margin:0; padding:0;'>✅ 중복되는 검사가 없습니다.</h3>\n"
+        # ✅ 4️⃣ 중복 검사 여부
+        if duplicate_exams:
+            result_text += "<h3 style='color:red; font-size:16px; line-height:1.4; margin-bottom:5px;'>❌ 중복된 평가 영역이 있습니다:</h3>"
+            result_text += "".join(duplicate_exams)  # 중복 검사 목록 추가
+        else:
+            result_text += """
+            <h3 style='color:green; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+                ✅ 중복되는 검사가 없습니다.
+            </h3>
+            """
 
-     # ✅ 검사 개수 제한 확인
-    if len(selected_exams) > max_exams:
-        result_text += f"<h3 style='color:red;'>❌ 검사 개수를 초과했습니다! (최대 {max_exams}개)</h3><br>"
-    else:
-        result_text += f"<h3 style='color:green;'>✅ 검사 개수 조건을 만족합니다. ({len(selected_exams)} / {max_exams})</h3><br>"
+        # ✅ 5️⃣ 검사 개수 제한 메시지 (초과 여부 확인 후 출력)
+        valid_exam_count = len(selected_exams)
 
-    return result_text
+        if valid_exam_count > max_exams:
+            result_text += f"""
+            <h3 style='color:red; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+                ❌ 검사 개수를 초과했습니다! (최대 {max_exams}개)
+            </h3>
+            """
+        else:
+            result_text += f"""
+            <h3 style='color:green; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+                ✅ 검사 개수 조건을 만족합니다. ({valid_exam_count} / {max_exams})
+            </h3>
+            """
+
+        return result_text
+
+    except Exception as e:
+        return f"<h3 style='color:red; font-size:16px; line-height:1.4;'>❌ 내부 오류 발생: {str(e)}</h3>"
 
     
 # ✅ 광고 URL 불러오기 함수

@@ -8,12 +8,13 @@
 	<!-- ✅ 스타일 추가 (결과창 크기 조정 및 가독성 향상) -->
     <style>
         .result-box {
-            font-size: 16px;
-            line-height: 1.5;
+            font-size: 16px;  /* 폰트 크기 조정 (기존 18px → 16px) */
+            line-height: 1.4;  /* 줄 간격 조정 (기존 1.8 → 1.4) */
             padding: 10px;
             border: 1px solid #ddd;
             background-color: #f9f9f9;
-            min-height: 100px;  /* 최소 높이 지정 */
+            max-height: 350px;  /* 📌 최대 높이 설정 (필요하면 조정 가능) */
+            overflow-y: auto;  /* 📌 넘칠 경우 스크롤 가능하게 설정 */
         }
     </style>
 </head>
@@ -72,14 +73,17 @@
 			{{ result_text | safe }}
 		</div>
 	{% else %}
-		<div class="result-box" style="color: gray;">
-        📌 초진 일자는 현재 날짜가 기본 설정입니다. 환자의 초진 날짜로 바꿔서 사용해주세요.<br>
-        📌 검사 결과를 빈 칸으로 설정하고 검사 일정 버튼을 눌리면 설정한 초진일 기준 7개월차가 되는 날을 알려줍니다.<br>
-        📌 초진 날짜를 선택하고, 시행할 검사를 쉼표로 구분하여 입력하면 검사 갯수, 평가 항목 , 자가 임상가 여부가 판단되어 결과를 알려드립니다.<br>
-        📌 본 페이지는 선생님들의 진료를 돕기위해 자발적으로 제작되었으며, 이로 인해 발생한 책임은 사용자의 몫임을 고지합니다.<br>
-        📌 만약 본 페이지가 도움이 되었다면 아래 광고를 클릭해주시면 서버비등 운영에 큰 도움이 됩니다.<br>
-        📌 본 페이지는 개인정보법등의 준수를 위해 그 어떠한 데이터도 저장하지 않으니 걱정하지 마시기 바랍니다.<br>
-		</div>
+        <div class="result-box">
+            <p>📌 초진 일자는 현재 날짜가 기본 설정입니다. 환자의 초진 날짜로 바꿔서 사용해주세요.</p>
+            <p>📌 검사 결과를 빈 칸으로 설정하고 검사 일정 버튼을 눌리면 설정한 초진일 기준 7개월차가 되는 날을 알려줍니다.</p>
+            <p>📌 초진 날짜를 선택하고, 시행할 검사를 쉼표로 구분하여 입력하면 검사 갯수, 평가 항목, 자가 임상가 여부가 판단되어 결과를 알려드립니다.</p>
+            <p>📌 본 페이지는 선생님들의 진료를 돕기 위해 자발적으로 제작되었으며, 이로 인해 발생한 책임은 사용자의 몫임을 고지합니다.</p>
+            <p>📌 만약 본 페이지가 도움이 되었다면 아래 광고를 클릭해주시면 서버비 등 운영에 큰 도움이 됩니다.</p>
+            <p>📌 본 페이지는 개인정보 보호법 준수를 위해 어떠한 데이터도 저장하지 않으니 걱정하지 마시기 바랍니다.</p>
+            <p>📌 모든 검사 명칭은 이번 척도 고시 기준으로 정의하였으으나 ASRS,AARS,HAM-D만 예외의 이름을 적용하였습니다 (고시기준 : K-ASRS,K-AARS,HDRS).</p>
+            <p>📌 새벽 시간대에는 다소 접속이 늦을 수 있습니다 (한국 시간 오전 6시 ~ 오전 1시까지 비교적 접속이 원활하게 설정하였습니다다).</p>
+        </div>
+    
 	{% endif %}
 
     <hr>
@@ -88,10 +92,15 @@
 	<!-- Clear 버튼 기능 추가 -->
 <script>
     function clearFields() {
-        document.getElementById("visit_date").value = "";
+            // visit_date는 유지하고 exam_list만 초기화
         document.getElementById("exam_list").value = "";
-    }
+        }
 </script>
-
+<div style="text-align: center; margin: 40px 0;">
+    <h3>💛 카카오페이로 후원하기</h3>
+    <p style="font-size: 14px;">이 사이트는 서버비와 유지비를 자비로 운영 중입니다.<br>
+        만약 도움이 되셨다면, 작은 정성으로 응원해 주시면 감사하겠습니다. 😊 .</p>
+    <img src="{{ url_for('static', filename='kakaopay_qr.png') }}" style="width: 180px; border-radius: 10px;">
+  </div>
 </body>
 </html>
