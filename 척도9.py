@@ -8,22 +8,31 @@ import pandas as pd
 def load_exam_data_from_gsheet(sheet_url):
     try:
         df = pd.read_csv(sheet_url)
-        exam_dict = {
-            row["검사명"].strip().lower(): (
+        exam_dict = {}
+        alias_to_name = {}
+
+        for _, row in df.iterrows():
+            name = str(row["검사명"]).strip().lower()
+            exam_dict[name] = (
                 row["카테고리"],
                 row["레벨"],
                 row["검사방식"]
             )
-            for _, row in df.iterrows()
-        }
-        return exam_dict
+            # 별칭 등록
+            alias_to_name[name] = name
+            for key in ["한글명", "청구코드"]:
+                alias = str(row.get(key, "")).strip().lower()
+                if alias:
+                    alias_to_name[alias] = name
+
+        return exam_dict, alias_to_name
     except Exception as e:
         print(f"[오류] Google Sheets 불러오기 실패: {e}")
-        return {}
+        return {}, {}
 
 # ✅ 여기에 변환된 URL 넣기
 GSHEET_URL = "https://docs.google.com/spreadsheets/d/1NUwlaPgSy2Jmc8eBlQ875tgxrwQVYylaB2ys8QSZzVc/export?format=csv&gid=0"
-exam_categories = load_exam_data_from_gsheet(GSHEET_URL)
+exam_categories, alias_to_name = load_exam_data_from_gsheet(GSHEET_URL)
 # ✅ GitHub의 광고 URL 파일 (사용자 업데이트 필요 없음)
 GITHUB_AD_URL = "https://raw.githubusercontent.com/purunsolnp/sonagi/main/adv_url.txt"
 

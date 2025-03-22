@@ -4,7 +4,9 @@ import time
 import requests
 from datetime import datetime
 from flask import Flask, render_template, request, send_from_directory, redirect
-from 척도9 import check_exam_availability, exam_categories  # ✅ 검사 로직 및 Google Sheets 데이터 가져오기
+
+# ✅ alias_to_name 추가로 불러오기
+from 척도9 import check_exam_availability, exam_categories, alias_to_name
 
 app = Flask(__name__)
 
@@ -56,34 +58,42 @@ def index():
         visit_date = request.form.get("visit_date", "")
         exam_list = request.form.get("exam_list", "")
 
-        # ✅ 검사 목록 쉼표 기준으로 분리
-        exam_list = [exam.strip() for exam in exam_list.split(",") if exam.strip()]
+        # ✅ 사용자 입력 분리
+        raw_exams = [exam.strip() for exam in exam_list.split(",") if exam.strip()]
 
-        # ✅ Google Sheets에서 유효한 검사 목록 가져오기
+        # ✅ alias 매핑을 통해 검사명으로 변환
+        processed_exam_list = []
+        for exam in raw_exams:
+            key = exam.lower()
+            if key in alias_to_name:
+                processed_exam_list.append(alias_to_name[key])
+            else:
+                processed_exam_list.append(exam)
+
+        # ✅ 유효 검사 분리
         try:
-            valid_exams = set(exam_categories.keys())  # ✅ 검사 목록 가져오기
+            valid_exams = set(exam_categories.keys())
         except Exception as e:
-            valid_exams = set()  # 오류 발생 시 빈 세트로 처리
+            valid_exams = set()
             result_text = f"<h3 style='color:red;'>❌ Google Sheets 로드 오류: {str(e)}</h3><br>"
 
-        # ✅ 인식되지 않은 검사 찾기
-        invalid_exams = [exam for exam in exam_list if exam.lower() not in valid_exams]
-        valid_exam_list = [exam for exam in exam_list if exam.lower() in valid_exams]  # ✅ 유효한 검사만 남기기
+        invalid_exams = [exam for exam in processed_exam_list if exam not in valid_exams]
+        valid_exam_list = [exam for exam in processed_exam_list if exam in valid_exams]
 
         if visit_date:
             try:
                 visit_date_parsed = datetime.strptime(visit_date, "%Y-%m-%d").date()
                 result_text = check_exam_availability(visit_date_parsed, valid_exam_list)
 
-                # ✅ 인식되지 않은 검사 목록을 바로 밑에 표시
+                # ✅ 인식 실패 검사 따로 출력
                 if invalid_exams:
                     result_text += f"<h3 style='color:red;'>❌ 인식하지 못한 검사 목록: {', '.join(invalid_exams)} (검사 목록 열람을 확인하세요)</h3><br>"
 
             except Exception as e:
                 result_text = f"<h3 style='color:red;'>❌ 오류 발생: {str(e)}</h3>"
 
-    # ✅ 항상 응답을 반환하도록 보장
     return render_template("index.html", result_text=result_text, visit_date=visit_date, exam_list=",".join(exam_list))
-# ✅ Flask 실행 (반드시 이 위치에 있어야 함)
+
+# ✅ Flask 실행
 if __name__ == "__main__":
     app.run(debug=True)
