@@ -175,20 +175,20 @@ def check_exam_availability(visit_date_str, selected_exams):
             """
 
         # ✅ 5️⃣ 검사 개수 제한 메시지 (초과 여부 확인 후 출력)
-        valid_exam_count = len(selected_exams)
+        valid_exam_count = len(exam_info_list)
 
         if valid_exam_count > max_exams:
             result_text += f"""
-            <h3 style='color:red; font-size:16px; line-height:1.4; margin-bottom:5px;'>
-                ❌ 검사 개수를 초과했습니다! (최대 {max_exams}개)
-            </h3>
-            """
+        <h3 style='color:red; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+         ❌ 검사 개수를 초과했습니다! (인식된 검사 기준: {valid_exam_count} / 최대 {max_exams}개)
+        </h3>
+         """
         else:
             result_text += f"""
-            <h3 style='color:green; font-size:16px; line-height:1.4; margin-bottom:5px;'>
-                ✅ 검사 개수 조건을 만족합니다. ({valid_exam_count} / {max_exams})
-            </h3>
-            """
+        <h3 style='color:green; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+        ✅ 검사 개수 조건을 만족합니다. (인식된 검사 기준: {valid_exam_count} / {max_exams})
+        </h3>
+        """
 
         return result_text
 

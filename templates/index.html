@@ -4,26 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>검사 일정 확인</title>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-RS9JDK6N0R"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-RS9JDK6N0R');
-</script>
+    <!-- Google Tag -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RS9JDK6N0R"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-RS9JDK6N0R');
+    </script>
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5481687878637086" crossorigin="anonymous"></script>
-	<!-- ✅ 스타일 추가 (결과창 크기 조정 및 가독성 향상) -->
+
+    <!-- ✅ 스타일 -->
     <style>
         .result-box {
-            font-size: 16px;  /* 폰트 크기 조정 (기존 18px → 16px) */
-            line-height: 1.4;  /* 줄 간격 조정 (기존 1.8 → 1.4) */
+            font-size: 16px;
+            line-height: 1.4;
             padding: 10px;
             border: 1px solid #ddd;
             background-color: #f9f9f9;
-            max-height: 350px;  /* 📌 최대 높이 설정 (필요하면 조정 가능) */
-            overflow-y: auto;  /* 📌 넘칠 경우 스크롤 가능하게 설정 */
+            max-height: 350px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -33,22 +35,6 @@
     <form method="post">
         <label for="visit_date">초진 날짜 선택:</label>
         <input type="date" id="visit_date" name="visit_date" required>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let visitDateInput = document.getElementById("visit_date");
-
-        // 오늘 날짜를 YYYY-MM-DD 형식으로 변환
-        if (!visitDateInput.value) {  // 값이 없을 경우에만 설정
-            let today = new Date();
-            let yyyy = today.getFullYear();
-            let mm = String(today.getMonth() + 1).padStart(2, '0');
-            let dd = String(today.getDate()).padStart(2, '0');
-            let todayStr = yyyy + '-' + mm + '-' + dd;
-            visitDateInput.value = todayStr;
-        }
-    });
-</script>
 
         <br><br>
 
@@ -63,60 +49,81 @@
 
         <button type="submit" style="width: 180px; height: 40px; font-size: 18px;">검사 일정 확인</button>
     </form>
+
     <a href="https://docs.google.com/spreadsheets/d/1VorjjuS8TcrijJpLUnm5k6L1REOq65v2eWxs-ozlGYQ/view?usp=sharing" target="_blank">
         <button style="font-size: 16px; margin-top: 10px;">📄 검사 목록 열람</button>
     </a>
-    <div id="result" class="result-box" style="font-size:18px; line-height:1.8;">
+
+    <div id="result" class="result-box">
         {{ result_text | safe }}
     </div>
+
     <hr>
 
+    <!-- ✅ 자동 날짜 입력 & 붙여넣기 자동 쉼표 변환 -->
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let visitDateInput = document.getElementById("visit_date");
+            let examInput = document.getElementById("exam_list");
+
+            // 기본 날짜를 오늘로 설정
+            if (!visitDateInput.value) {
+                let today = new Date();
+                let yyyy = today.getFullYear();
+                let mm = String(today.getMonth() + 1).padStart(2, '0');
+                let dd = String(today.getDate()).padStart(2, '0');
+                visitDateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+
+            // ✅ 붙여넣기 시 자동 쉼표 변환
+            examInput.addEventListener("paste", function (event) {
+                event.preventDefault();
+                let paste = (event.clipboardData || window.clipboardData).getData("text");
+
+                paste = paste.replace(/[\n\r\t]+/g, ",");
+                paste = paste.replace(/\s{2,}/g, ",");
+                paste = paste.replace(/,+/g, ",");
+                paste = paste.trim();
+
+                // 현재 값에 추가
+                let current = examInput.value;
+                if (current && !current.trim().endsWith(",")) {
+                    current += ", ";
+                }
+                examInput.value = current + paste;
+            });
+        });
+
         function clearFields() {
             document.getElementById("exam_list").value = "";
         }
     </script>
-	<!-- 결과 메시지 출력 -->
-	{% if result %}
-		<div class="result-box">
-			{{ result_text | safe }}
-		</div>
-	{% else %}
-        <div class="result-box">
-            <p>📌 초진 일자는 현재 날짜가 기본 설정입니다. 환자의 초진 날짜로 바꿔서 사용해주세요.</p>
-            <p>📌 검사 결과를 빈 칸으로 설정하고 검사 일정 버튼을 눌리면 설정한 초진일 기준 7개월차가 되는 날을 알려줍니다.</p>
-            <p>📌 초진 날짜를 선택하고, 시행할 검사를 쉼표로 구분하여 입력하면 검사 갯수, 평가 항목, 자가 임상가 여부가 판단되어 결과를 알려드립니다.</p>
-            <p>📌 보호자 작성의 자가 검사는 '자가검사'로 분류하여 제작하였습니다.</p>
-            <p>📌 본 페이지는 선생님들의 진료를 돕기 위해 자발적으로 제작되었으며, 이로 인해 발생한 책임은 사용자의 몫임을 고지합니다.</p>
-            <p>📌 만약 본 페이지가 도움이 되었다면 후원 또는 추후 추가될 광고를 클릭해주시면 서버비 등 운영에 큰 도움이 됩니다.</p>
-            <p>📌 본 페이지는 개인정보 보호법 준수를 위해 어떠한 데이터도 저장하지 않으니 걱정하지 마시기 바랍니다.</p>
-            <p>📌 모든 검사 명칭은 이번 척도 고시 기준으로 정의하였으나 ASRS,AARS,HAM-D만 예외의 이름을 적용하였습니다 (고시기준 : K-ASRS,K-AARS,HDRS).</p>
-            
-        </div>
-    
-	{% endif %}
+
+    <!-- 기본 안내 메시지 -->
+    {% if not result %}
+    <div class="result-box">
+        <p>📌 초진 일자는 현재 날짜가 기본 설정입니다. 환자의 초진 날짜로 바꿔서 사용해주세요.</p>
+        <p>📌 검사 결과를 빈 칸으로 설정하고 검사 일정 버튼을 눌리면 설정한 초진일 기준 7개월차가 되는 날을 알려줍니다.</p>
+        <p>📌 초진 날짜를 선택하고, 시행할 검사를 쉼표로 구분하여 입력하면 검사 갯수, 평가 항목, 자가 임상가 여부가 판단되어 결과를 알려드립니다.</p>
+        <p>📌 보호자 작성의 자가 검사는 '자가검사'로 분류하여 제작하였습니다.</p>
+        <p>📌 본 페이지는 선생님들의 진료를 돕기 위해 자발적으로 제작되었으며, 이로 인해 발생한 책임은 사용자의 몫임을 고지합니다.</p>
+        <p>📌 개인정보 보호법을 준수하며, 어떤 데이터도 저장하지 않습니다.</p>
+        <p>📌 검사 명칭은 척도 고시 기준으로 정의하였습니다 (예외: ASRS → K-ASRS 등).</p>
+    </div>
+    {% endif %}
 
     <hr>
 
-
-	<!-- Clear 버튼 기능 추가 -->
-<script>
-    function clearFields() {
-            // visit_date는 유지하고 exam_list만 초기화
-        document.getElementById("exam_list").value = "";
-        }
-</script>
-<div style="text-align: center; margin-top: 40px;">
-    <h3>☕ 제작자 후원하기</h3>
-    <p style="font-size: 14px;">
-        이 사이트는 진료에 도움이 되고자 무료로 운영되고 있습니다.<br>
-        도움이 되셨다면 아래 플랫폼을을 통해 따뜻한 응원을 보내주시면 큰 힘이 됩니다.
-    </p>
-    <a href="https://buymeacoffee.com/sonagi" target="_blank">
-      <button style="background-color: #FFDD00; color: black; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer;">
-        따뜻한 후원 감사드립니다
-      </button>
-    </a>
-  </div>
+    <div style="text-align: center; margin-top: 40px;">
+        <h3>☕ 제작자 후원하기</h3>
+        <p style="font-size: 14px;">
+            도움이 되셨다면 아래 플랫폼을 통해 응원해주시면 서버 운영에 큰 힘이 됩니다.
+        </p>
+        <a href="https://buymeacoffee.com/sonagi" target="_blank">
+          <button style="background-color: #FFDD00; color: black; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer;">
+            따뜻한 후원 감사드립니다
+          </button>
+        </a>
+    </div>
 </body>
 </html>
