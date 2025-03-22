@@ -54,7 +54,7 @@
         <button style="font-size: 16px; margin-top: 10px;">📄 검사 목록 열람</button>
     </a>
 
-    <div id="result" class="result-box">
+    <div id="result" class="result-box" style="max-height: 600px; overflow-y: auto;">
         {{ result_text | safe }}
     </div>
 

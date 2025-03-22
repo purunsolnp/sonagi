@@ -108,12 +108,12 @@ def check_exam_availability(visit_date_str, selected_exams):
         seven_months_start = calculate_seven_months_start(visit_date)
 
         # ✅ 검사 가능 개수 설정
-        if today == visit_date:
+        if (today - visit_date).days == 0:
             max_exams = 12
         elif today < seven_months_start:
             max_exams = 6
         else:
-            max_exams = 2  # 7개월차 이후
+            max_exams = 2 # 7개월차 이후
 
         # ✅ 7개월차 날짜 계산 (항상 출력)
         seven_months_date = calculate_seven_months_start(visit_date)
