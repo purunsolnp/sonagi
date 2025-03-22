@@ -2,7 +2,7 @@ import os
 import threading
 import time
 import requests
-from datetime import datetime
+from datetime import datetime, date
 from flask import Flask, render_template, request, send_from_directory, redirect
 
 # ✅ alias_to_name 추가로 불러오기
@@ -83,8 +83,11 @@ def index():
         if visit_date:
             try:
                 visit_date_parsed = datetime.strptime(visit_date, "%Y-%m-%d").date()
-                result_text = check_exam_availability(visit_date_parsed, valid_exam_list)
-
+                result_text = check_exam_availability(
+                    visit_date_parsed,
+                    valid_exam_list,
+                    target_date=date.today()   # ✅ 추가
+                )
                 # ✅ 인식 실패 검사 따로 출력
                 if invalid_exams:
                     result_text += f"<h3 style='color:red;'>❌ 인식하지 못한 검사 목록: {', '.join(invalid_exams)} (검사 목록 열람을 확인하세요)</h3><br>"
