@@ -60,7 +60,10 @@ def calculate_weeks_since_initial(visit_date):
     """
     초진일이 포함된 주를 1주차로 설정하고, 한 주의 끝을 일요일로 잡아 주차를 계산
     """
-    today = datetime.today().date()
+    if target_date is None:
+        today = datetime.today().date()
+    else:
+        today = target_date
 
     # ✅ 초진일이 포함된 주의 월요일 찾기
     visit_week_start = visit_date - timedelta(days=visit_date.weekday())
@@ -91,7 +94,7 @@ def calculate_exam_limit(visit_date, target_date):
 
     return months_since, max_exams
 
-def check_exam_availability(visit_date_str, selected_exams):
+def check_exam_availability(visit_date_str, selected_exams, target_date=None):
     """
     검사 가능 여부를 확인하고 HTML 메시지로 반환
     - visit_date_str: 'YYYY-MM-DD' 형식의 문자열
@@ -103,7 +106,11 @@ def check_exam_availability(visit_date_str, selected_exams):
         else:
             visit_date = visit_date_str  # 이미 datetime.date이면 그대로 사용
 
-        today = datetime.today().date()
+        # ✅ target_date 처리 추가
+        if target_date is None:
+            today = datetime.today().date()
+        else:
+            today = target_date
         months_since = (today.year - visit_date.year) * 12 + (today.month - visit_date.month) + 1
         seven_months_start = calculate_seven_months_start(visit_date)
 
