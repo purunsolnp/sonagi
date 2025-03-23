@@ -1,130 +1,136 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>검사 일정 확인</title>
-
-    <!-- Google Tag -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RS9JDK6N0R"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-RS9JDK6N0R');
-    </script>
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5481687878637086" crossorigin="anonymous"></script>
-
-    <!-- ✅ 스타일 -->
-    <style>
-        .result-box {
-            font-size: 16px;
-            line-height: 1.4;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-            max-height: 350px;
-            overflow-y: auto;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>검사 일정 확인 by 소나기</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RS9JDK6N0R"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-RS9JDK6N0R');
+  </script>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; }
+    .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .clear-btn { height: 30px; padding: 0 12px; font-size: 14px; }
+    .main-btn { height: 40px; font-size: 16px; padding: 0 20px; }
+    .button-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+    .result-box {
+      font-size: 16px;
+      line-height: 1.4;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      max-height: 350px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-    <h2>검사 일정 확인</h2>
-
-    <form method="post">
-        <label for="visit_date">초진 날짜 선택:</label>
-        <input type="date" id="visit_date" name="visit_date" required>
-
-        <br><br>
-
-        <label for="exam_list">검사 목록 입력 (쉼표로 구분):</label>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <input type="text" id="exam_list" name="exam_list" value="{{ exam_list }}" 
-                   style="width: 400px; height: 30px; font-size: 16px;">
-            <button type="button" onclick="clearFields()" style="height: 34px; font-size: 16px;">Clear</button>
-        </div>
-
-        <br>
-
-        <button type="submit" style="width: 180px; height: 40px; font-size: 18px;">검사 일정 확인</button>
-    </form>
-
-    <a href="https://docs.google.com/spreadsheets/d/1om7_hy5ji_kUVpunx8b3LwyQDW1eZ1bhdkZHwGLWby8/edit?usp=sharing" target="_blank">
-        <button style="font-size: 16px; margin-top: 10px;">📄 검사 목록 열람</button>
-    </a>
-
-    <div id="result" class="result-box" style="max-height: 600px; overflow-y: auto;">
-        {{ result_text | safe }}
+  <h2>검사 일정 확인 by 소나기 2025-03-23 버젼</h2>
+  <form method="post">
+    <div class="input-row">
+      <label for="visit_date">초진일:</label>
+      <input type="date" id="visit_date" name="visit_date" value="{{ visit_date }}">
+      <button type="button" class="clear-btn" onclick="clearVisitDate()">초기화</button>
+    </div>
+    <div class="input-row">
+      <label for="target_date">진료일:</label>
+      <input type="date" id="target_date" name="target_date" value="{{ target_date }}">
+      <button type="button" class="clear-btn" onclick="clearTargetDate()">초기화</button>
+    </div>
+    <label for="exam_list">검사 목록 입력 (쉼표로 구분):</label>
+    <div class="input-row">
+      <input type="text" id="exam_list" name="exam_list" value="{{ exam_list }}" placeholder="예: PHQ-9, ASRS, FY753280, 증상 및 행동 평가 척도 - Level Ⅱ [반추적 반응 척도 RRS]" style="width: 100%; max-width: 700px; height: 30px; font-size: 16px;">
+      <button type="button" class="clear-btn" onclick="clearExamList()">초기화</button>
     </div>
 
-    <hr>
-
-    <!-- ✅ 자동 날짜 입력 & 붙여넣기 자동 쉼표 변환 -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let visitDateInput = document.getElementById("visit_date");
-            let examInput = document.getElementById("exam_list");
-
-            // 기본 날짜를 오늘로 설정
-            if (!visitDateInput.value) {
-                let today = new Date();
-                let yyyy = today.getFullYear();
-                let mm = String(today.getMonth() + 1).padStart(2, '0');
-                let dd = String(today.getDate()).padStart(2, '0');
-                visitDateInput.value = `${yyyy}-${mm}-${dd}`;
-            }
-
-            // ✅ 붙여넣기 시 자동 쉼표 변환
-            examInput.addEventListener("paste", function (event) {
-                event.preventDefault();
-                let paste = (event.clipboardData || window.clipboardData).getData("text");
-
-                paste = paste.replace(/[\n\r\t]+/g, ",");
-                paste = paste.replace(/\s{2,}/g, ",");
-                paste = paste.replace(/,+/g, ",");
-                paste = paste.trim();
-
-                // 현재 값에 추가
-                let current = examInput.value;
-                if (current && !current.trim().endsWith(",")) {
-                    current += ", ";
-                }
-                examInput.value = current + paste;
-            });
-        });
-
-        function clearFields() {
-            document.getElementById("exam_list").value = "";
-        }
-    </script>
-
-    <!-- 기본 안내 메시지 -->
-    {% if not result %}
-    <div class="result-box">
-        <p>📌 사용법 유튜브 설명 링크 : <a href="https://youtu.be/qjuiwCUTdjU" target="_blank">여기 클릭</a></p>
-        <p>📌 초진 일자는 현재 날짜가 기본 설정입니다. 환자의 초진 날짜로 바꿔서 사용해주세요.</p>
-        <p>📌 검사 결과를 빈 칸으로 설정하고 검사 일정 버튼을 눌리면 설정한 초진일 기준 7개월차가 되는 날을 알려줍니다.</p>
-        <p>📌 초진 날짜를 선택하고, 시행할 검사를 쉼표로 구분하여 입력하면 검사 갯수, 평가 항목, 자가 임상가 여부가 판단되어 결과를 알려드립니다.</p>
-        <p>📌 보호자 작성의 자가 검사는 '자가검사'로 분류하여 제작하였습니다.</p>
-        <p>📌 본 페이지는 선생님들의 진료를 돕기 위해 자발적으로 제작되었으며, 이로 인해 발생한 책임은 사용자의 몫임을 고지합니다.</p>
-        <p>📌 개인정보 보호법을 준수하며, 어떤 데이터도 저장하지 않습니다.</p>
-        <p>📌 검사 명칭은 척도 고시 기준으로 정의하였습니다, 자세한 것은 검사 목록 열람을 확인해주세요. (예외: ASRS → K-ASRS 등).</p>
+    {% if mapped_names and not result_text %}
+    <div style="margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+      <strong>입력값 → 정식 검사명 매핑 결과:</strong><br>
+      {% for line in mapped_names %}{{ line }}<br>{% endfor %}
     </div>
     {% endif %}
 
-    <hr>
-
-    <div style="text-align: center; margin-top: 40px;">
-        <h3>☕ 제작자 후원하기</h3>
-        <p style="font-size: 14px;">
-            도움이 되셨다면 아래 플랫폼을 통해 응원해주시면 서버 운영에 큰 힘이 됩니다.
-        </p>
-        <a href="https://buymeacoffee.com/sonagi" target="_blank">
-          <button style="background-color: #FFDD00; color: black; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer;">
-            따뜻한 후원 감사드립니다
-          </button>
-        </a>
+    <div class="button-group">
+      <button type="submit" class="main-btn">검사 일정 확인</button>
+      <button type="button" class="main-btn" onclick="clearAll()">All Clear</button>
+      <a href="https://docs.google.com/spreadsheets/d/1om7_hy5ji_kUVpunx8b3LwyQDW1eZ1bhdkZHwGLWby8/edit?usp=sharing" target="_blank">
+        <button type="button" class="main-btn">검사 목록 열람</button>
+      </a>
     </div>
+  </form>
+
+  <div id="result" class="result-box">{{ result_text | safe }}</div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const today = new Date().toISOString().split('T')[0];
+
+      const visitInput = document.getElementById("visit_date");
+      const targetInput = document.getElementById("target_date");
+
+      if (!visitInput.value) visitInput.value = today;
+      if (!targetInput.value) targetInput.value = today;
+
+      const examInput = document.getElementById("exam_list");
+      examInput.addEventListener("paste", function (event) {
+        event.preventDefault();
+        let paste = (event.clipboardData || window.clipboardData).getData("text");
+        paste = paste.replace(/[\n\r\t]+/g, ",").replace(/\s{2,}/g, ",").replace(/,+/g, ",").trim();
+        let current = examInput.value;
+        if (current && !current.trim().endsWith(",")) current += ", ";
+        examInput.value = current + paste;
+      });
+    });
+
+    function clearVisitDate() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById("visit_date").value = today;
+    }
+    function clearTargetDate() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById("target_date").value = today;
+    }
+    function clearExamList() {
+      document.getElementById("exam_list").value = "";
+    }
+    function clearAll() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById("visit_date").value = today;
+      document.getElementById("target_date").value = today;
+      clearExamList();
+    }
+  </script>
+
+  {% if not result %}
+  <div class="result-box">
+    <p>📌 사용법 유튜브 설명 링크 : <a href="https://youtu.be/qjuiwCUTdjU" target="_blank">여기 클릭, 생각보다 많은 기능이 있습니다.</a></p>
+    <p>📌 초진일과 진료일을 설정한 후 검사 목록을 입력하세요.</p>
+    <p>📌 검사 결과를 빈 칸으로 설정하고 검사 일정 버튼을 누르면 설정한 초진일 기준 7개월차가 되는 날을 알려줍니다.</p>
+    <p>📌 초진 날짜를 선택하고, 시행할 검사를 쉼표로 구분하여 입력하면 검사 갯수, 평가 항목, 자가 임상가 여부가 판단되어 결과를 알려드립니다.</p>
+    <p>📌 이지스 기준 "계산코드"열의 처방을 드래그 후 복사/붙여넣기로도 사용이 가능합니다. 트루닥에서도 유사한 메커니즘으로 가능합니다.</p>
+    <p>📌 보호자 작성의 자가 검사는 '자가검사'로 분류하여 제작하였습니다.</p>
+    <p>📌 본 페이지는 선생님들의 진료를 돕기 위해 자발적으로 제작되었으며, 이로 인해 발생한 책임은 사용자의 몫임을 고지합니다.</p>
+    <p>📌 개인정보 보호법을 준수하며, 어떤 데이터도 저장하지 않습니다.</p>
+    <p>📌 검사 명칭은 척도 고시 기준으로 정의하였습니다, 자세한 것은 검사 목록 열람을 확인해주세요. (예외: ASRS → K-ASRS 등).</p>
+  </div>
+  {% endif %}
+
+  <hr>
+
+  <div style="text-align: center; margin-top: 40px;">
+    <h3>☕ 제작자 후원하기</h3>
+    <p style="font-size: 14px;">
+      도움이 되셨다면 아래 플랫폼을 통해 응원해주시면 서버 운영에 큰 힘이 됩니다.
+    </p>
+    <a href="https://buymeacoffee.com/sonagi" target="_blank">
+      <button style="background-color: #FFDD00; color: black; border: none; padding: 10px 20px; font-size: 16px; border-radius: 6px; cursor: pointer;">
+        따뜻한 후원 감사드립니다
+      </button>
+    </a>
+  </div>
 </body>
 </html>

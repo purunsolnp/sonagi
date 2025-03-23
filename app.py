@@ -58,10 +58,10 @@ def index():
         visit_date = request.form.get("visit_date", "")
         exam_list = request.form.get("exam_list", "")
 
-        # ✅ 사용자 입력 분리
+        # ✅ 사용자 입력 분리 (원본 보존)
         raw_exams = [exam.strip() for exam in exam_list.split(",") if exam.strip()]
 
-        # ✅ alias 매핑을 통해 검사명으로 변환
+        # ✅ alias 매핑을 통해 정식 검사명으로 변환
         processed_exam_list = []
         for exam in raw_exams:
             key = exam.lower()
@@ -70,7 +70,7 @@ def index():
             else:
                 processed_exam_list.append(exam)
 
-        # ✅ 유효 검사 분리
+        # ✅ 유효 검사만 추출
         try:
             valid_exams = set(exam_categories.keys())
         except Exception as e:
@@ -80,23 +80,37 @@ def index():
         invalid_exams = [exam for exam in processed_exam_list if exam not in valid_exams]
         valid_exam_list = [exam for exam in processed_exam_list if exam in valid_exams]
 
+        # ✅ 검사 일정 결과 처리
         if visit_date:
             try:
                 visit_date_parsed = datetime.strptime(visit_date, "%Y-%m-%d").date()
                 result_text = check_exam_availability(
                     visit_date_parsed,
                     valid_exam_list,
-                    target_date=date.today()   # ✅ 추가
+                    target_date=date.today()
                 )
-                # ✅ 인식 실패 검사 따로 출력
+
                 if invalid_exams:
                     result_text += f"<h3 style='color:red;'>❌ 인식하지 못한 검사 목록: {', '.join(invalid_exams)} (검사 목록 열람을 확인하세요)</h3><br>"
 
             except Exception as e:
                 result_text = f"<h3 style='color:red;'>❌ 오류 발생: {str(e)}</h3>"
 
-    return render_template("index.html", result_text=result_text, visit_date=visit_date, exam_list=",".join(exam_list))
+        # ✅ 입력창에 검사명 기준 정규화된 목록을 표시
+        exam_list = ",".join([alias_to_name.get(exam.lower(), exam) for exam in raw_exams])
 
+    
+
+# ✅ 결과 템플릿 렌더링
+    return render_template(
+        "index.html",
+        result_text=result_text,
+        visit_date=visit_date,
+        target_date=request.form.get("target_date", ""),  # ← 추가됨
+        exam_list=exam_list,
+        exam_names=exam_categories.keys(),
+        mapped_names=[f"{e} → {alias_to_name.get(e.lower(), '❌ 인식 불가')}" for e in raw_exams] if request.method == "POST" else []
+    )
 # ✅ Flask 실행
 if __name__ == "__main__":
     app.run(debug=True)
