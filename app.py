@@ -10,6 +10,26 @@ from 척도9 import check_exam_availability, exam_categories, alias_to_name
 
 app = Flask(__name__)
 
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+@app.route("/help")
+def help():
+    return render_template("help.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
 # ✅ 자동 리디렉션 설정 (onrender.com → psytestchecker.com)
 @app.before_request
 def redirect_to_custom_domain():
@@ -51,13 +71,14 @@ def get_ad_url_api():
 @app.route("/", methods=["GET", "POST"])
 def index():
     result_text = ""
-    visit_date = ""
-    exam_list = ""
+
+    # ✅ 날짜 기본값 설정 추가
+    today_str = date.today().isoformat()
+    visit_date = request.form.get("visit_date", "") or today_str
+    target_date = request.form.get("target_date", "") or today_str
+    exam_list = request.form.get("exam_list", "")
 
     if request.method == "POST":
-        visit_date = request.form.get("visit_date", "")
-        exam_list = request.form.get("exam_list", "")
-
         # ✅ 사용자 입력 분리 (원본 보존)
         raw_exams = [exam.strip() for exam in exam_list.split(",") if exam.strip()]
 
@@ -84,10 +105,12 @@ def index():
         if visit_date:
             try:
                 visit_date_parsed = datetime.strptime(visit_date, "%Y-%m-%d").date()
+                target_date_parsed = datetime.strptime(target_date, "%Y-%m-%d").date()
+
                 result_text = check_exam_availability(
                     visit_date_parsed,
                     valid_exam_list,
-                    target_date=date.today()
+                    target_date=target_date_parsed
                 )
 
                 if invalid_exams:
@@ -105,8 +128,8 @@ def index():
     return render_template(
         "index.html",
         result_text=result_text,
-        visit_date=visit_date,
-        target_date=request.form.get("target_date", ""),  # ← 추가됨
+        visit_date=visit_date,           # ✅ app.py 상단에서 미리 설정한 값 사용
+        target_date=target_date,         # ✅ 위와 동일
         exam_list=exam_list,
         exam_names=exam_categories.keys(),
         mapped_names=[f"{e} → {alias_to_name.get(e.lower(), '❌ 인식 불가')}" for e in raw_exams] if request.method == "POST" else []

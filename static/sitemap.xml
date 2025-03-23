@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- 메인 페이지 -->
+  <url>
+    <loc>https://psytestchecker.com/</loc>
+  </url>
+
+  <!-- 서브 페이지들 -->
+  <url>
+    <loc>https://psytestchecker.com/help</loc>
+  </url>
+  <url>
+    <loc>https://psytestchecker.com/about</loc>
+  </url>
+  <url>
+    <loc>https://psytestchecker.com/privacy</loc>
+  </url>
+  <url>
+    <loc>https://psytestchecker.com/terms</loc>
+  </url>
+  <url>
+    <loc>https://psytestchecker.com/contact</loc>
+  </url>
+</urlset>
