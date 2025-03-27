@@ -2,31 +2,46 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>검사 일정 확인 서비스</title>
-
-    <!-- 3초 후 자동으로 index.html로 이동 -->
-    <meta http-equiv="refresh" content="2; url=/check">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
     <h1>환영합니다! 검사 일정 확인 서비스</h1>
-    
+
+    <p><strong>접근을 위해 비밀번호를 입력하세요. 비밀번호는 온마음 익게에 올려두었습니다.</strong></p>
+
+    <form onsubmit="return checkPassword()">
+        <input type="password" id="passwordInput" placeholder="비밀번호 입력" required>
+        <button type="submit">접속하기</button>
+    </form>
+
+    <p id="error" style="color:red; display:none;">❌ 비밀번호가 틀렸습니다.</p>
+
+    <hr>
+
     <p>본 서비스는 정신건강 검사 일정 관리를 돕기 위해 제작되었습니다.</p>
     <p>초진 날짜와 검사항목을 입력하면, 적절한 검사 일정을 추천받을 수 있습니다.</p>
     <p>정신과 진료에서 검사 일정 관리는 매우 중요하며, 본 서비스는 이를 보다 편리하게 할 수 있도록 도와줍니다.</p>
 
-    <h2> 주요 기능</h2>
+    <h2>주요 기능</h2>
     <ul>
         <li>초진 날짜 입력 후 검사 일정 자동 추천</li>
         <li>검사 목록 분석 및 적절한 검사 시점 제공</li>
         <li>자가 검사의 경우, 보호자가 직접 평가할 수 있도록 안내</li>
     </ul>
 
-    <p>2초 후 자동으로 검사 일정 확인 페이지로 이동합니다.</p>
-    <p>바로 이동하려면 아래 버튼을 클릭하세요.</p>
-
-    <a href="/check"><button>검사 일정 확인하기</button></a>
-
+    <script>
+        function checkPassword() {
+            const input = document.getElementById("passwordInput").value;
+            const errorMsg = document.getElementById("error");
+            if (input === "psy2025") {
+                window.location.href = "/check";
+                return false;
+            } else {
+                errorMsg.style.display = "block";
+                return false;
+            }
+        }
+    </script>
 </body>
 </html>
