@@ -22,13 +22,15 @@
     .button-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; align-items: center; }
     .result-box {
       font-size: 16px;
-      line-height: 1.4;
+      line-height: 1.6;
       padding: 10px;
       border: 1px solid #ddd;
       background-color: #f9f9f9;
-      max-height: 350px;
-      overflow-y: auto;
+      max-height: none;       /* ← 최대 높이 제한 없애기 */
+      overflow-y: visible;    /* ← 스크롤 대신 전체 표시 */
+      white-space: normal;    /* ← 텍스트 줄바꿈 허용 */
     }
+    
     .footer {
       margin-top: 50px;
       font-size: 14px;
