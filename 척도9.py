@@ -34,27 +34,25 @@ exam_categories, alias_to_name = load_exam_data_from_gsheet(GSHEET_URL)
 GITHUB_AD_URL = "https://raw.githubusercontent.com/purunsolnp/sonagi/main/adv_url.txt"
 DEFAULT_AD_URL = "https://your-default-page.com"
 
-def calculate_seven_months_start(visit_date):
-    return (visit_date + relativedelta(months=6)).replace(day=1)
+def calculate_six_months_date(visit_date):
+    """초진일로부터 정확히 6개월(180일) 후 날짜를 계산"""
+    return visit_date + timedelta(days=180)
 
-def calculate_weeks_since_initial(visit_date):
-    today = datetime.today().date()
-    visit_week_start = visit_date - timedelta(days=visit_date.weekday())
-    week_number = ((today - visit_week_start).days // 7) + 1
-    return week_number
+def calculate_days_since_visit(visit_date, target_date):
+    """초진일로부터 경과된 일수를 계산"""
+    return (target_date - visit_date).days
 
 def calculate_exam_limit(visit_date, target_date):
-    seven_months_start = calculate_seven_months_start(visit_date)
-    months_since = (target_date.year - visit_date.year) * 12 + (target_date.month - visit_date.month)
-
+    days_since = calculate_days_since_visit(visit_date, target_date)
+    
     if target_date == visit_date:
         max_exams = 12
-    elif target_date < seven_months_start:
+    elif days_since < 180:  # 6개월(180일) 미만
         max_exams = 6
-    else:
+    else:  # 6개월(180일) 이상
         max_exams = 2
 
-    return months_since, max_exams
+    return days_since, max_exams
 
 def check_exam_availability(visit_date_str, selected_exams, target_date=None):
     try:
@@ -76,21 +74,23 @@ def check_exam_availability(visit_date_str, selected_exams, target_date=None):
             </h3>
             """
 
-        months_since = (today.year - visit_date.year) * 12 + (today.month - visit_date.month) + 1
-        seven_months_start = calculate_seven_months_start(visit_date)
+        days_since = calculate_days_since_visit(visit_date, today)
+        six_months_date = calculate_six_months_date(visit_date)
 
         if (today - visit_date).days == 0:
             max_exams = 12
-        elif today < seven_months_start:
+        elif days_since < 180:  # 6개월(180일) 미만
             max_exams = 6
-        else:
+        else:  # 6개월(180일) 이상
             max_exams = 2
 
-        seven_months_date = calculate_seven_months_start(visit_date)
         result_text = f"""
         <h3 style='color:blue; font-size:16px; line-height:1.4; margin-bottom:5px;'>
-            📅 초진일 ({visit_date}) 기준 7개월차는 {seven_months_date.year}년 {seven_months_date.month}월 1일 입니다.
+            📅 초진일 ({visit_date}) 기준 6개월 후는 {six_months_date.year}년 {six_months_date.month}월 {six_months_date.day}일 입니다.
         </h3>
+        <h4 style='color:blue; font-size:14px; line-height:1.4; margin-bottom:5px;'>
+            📊 현재까지 경과일: {days_since}일
+        </h4>
         """
 
         exam_info_list = []
@@ -150,12 +150,18 @@ def check_exam_availability(visit_date_str, selected_exams, target_date=None):
             <h3 style='color:red; font-size:16px; line-height:1.4; margin-bottom:5px;'>
              ❌ 검사 개수를 초과했습니다! (인식된 검사 기준: {valid_exam_count} / 최대 {max_exams}개)
             </h3>
+            <p style='color:blue; font-size:14px; line-height:1.4; margin-bottom:5px;'>
+             💡 현재 {days_since}일 경과로 {'6개월 미만' if days_since < 180 else '6개월 이상'} 구간입니다.
+            </p>
             """
         else:
             result_text += f"""
             <h3 style='color:green; font-size:16px; line-height:1.4; margin-bottom:5px;'>
             ✅ 검사 개수 조건을 만족합니다. (인식된 검사 기준: {valid_exam_count} / {max_exams})
             </h3>
+            <p style='color:blue; font-size:14px; line-height:1.4; margin-bottom:5px;'>
+             💡 현재 {days_since}일 경과로 {'6개월 미만' if days_since < 180 else '6개월 이상'} 구간입니다.
+            </p>
             """
 
         return result_text
