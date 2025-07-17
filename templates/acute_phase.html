@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>급성기 종료 및 후속 관리 구간 확인</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; }
+    .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .main-btn { height: 40px; font-size: 16px; padding: 0 20px; }
+    .result-box {
+      font-size: 16px;
+      line-height: 1.6;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      min-height: 100px;
+      margin-top: 20px;
+    }
+    .nav-links { text-align: center; margin-top: 30px; }
+    .nav-links a { margin: 0 10px; color: #005b96; text-decoration: none; }
+    .nav-links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="nav-links">
+    <a href="/">🏠 홈으로 이동</a> |
+    <a href="/check">📝 검사 일정 확인</a> |
+    <a href="/help">📖설명서</a> |
+    <a href="/about">🧑‍⚕️제작자 소개</a>
+  </div>
+  <h2>급성기 종료 및 후속 관리 구간 확인</h2>
+  <form method="post">
+    <div class="input-row">
+      <label for="visit_date">초진일자:</label>
+      <input type="date" id="visit_date" name="visit_date" value="{{ visit_date }}" style="font-size:16px;">
+      <span>또는 직접 입력: </span>
+      <input type="text" id="visit_date_str" name="visit_date_str" placeholder="yyyy-mm-dd" style="font-size:16px; width:130px;">
+      <button type="submit" class="main-btn">확인</button>
+    </div>
+    <div style="color:#888; font-size:14px;">날짜 선택 위젯 또는 yyyy-mm-dd 형식으로 입력 가능합니다.</div>
+  </form>
+  <div class="result-box">{{ result_text|safe }}</div>
+</body>
+</html> 

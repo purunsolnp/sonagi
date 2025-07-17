@@ -35,8 +35,8 @@ GITHUB_AD_URL = "https://raw.githubusercontent.com/purunsolnp/sonagi/main/adv_ur
 DEFAULT_AD_URL = "https://your-default-page.com"
 
 def calculate_six_months_date(visit_date):
-    """초진일로부터 정확히 6개월(180일) 후 날짜를 계산"""
-    return visit_date + timedelta(days=180)
+    """초진일로부터 정확히 6개월 후 날짜를 계산"""
+    return visit_date + relativedelta(months=6)
 
 def calculate_days_since_visit(visit_date, target_date):
     """초진일로부터 경과된 일수를 계산"""
@@ -76,22 +76,20 @@ def check_exam_availability(visit_date_str, selected_exams, target_date=None):
 
         days_since = calculate_days_since_visit(visit_date, today)
         six_months_date = calculate_six_months_date(visit_date)
+        result_text = ""
+        # max_exams 계산 로직 추가
+        _, max_exams = calculate_exam_limit(visit_date, today)
 
-        if (today - visit_date).days == 0:
-            max_exams = 12
-        elif days_since < 180:  # 6개월(180일) 미만
-            max_exams = 6
-        else:  # 6개월(180일) 이상
-            max_exams = 2
-
-        result_text = f"""
-        <h3 style='color:blue; font-size:16px; line-height:1.4; margin-bottom:5px;'>
-            📅 초진일 ({visit_date}) 기준 6개월 후는 {six_months_date.year}년 {six_months_date.month}월 {six_months_date.day}일 입니다.
-        </h3>
-        <h4 style='color:blue; font-size:14px; line-height:1.4; margin-bottom:5px;'>
-            📊 현재까지 경과일: {days_since}일
-        </h4>
-        """
+        # --- 아래 2줄 안내문 제거 ---
+        # result_text = f"""
+        # <h3 style='color:blue; font-size:16px; line-height:1.4; margin-bottom:5px;'>
+        #     📅 초진일 ({visit_date}) 기준 6개월 후는 {six_months_date.year}년 {six_months_date.month}월 {six_months_date.day}일 입니다.
+        # </h3>
+        # <h4 style='color:blue; font-size:14px; line-height:1.4; margin-bottom:5px;'>
+        #     📊 현재까지 경과일: {days_since}일
+        # </h4>
+        # """
+        # result_text = ""
 
         exam_info_list = []
         invalid_exams = []
