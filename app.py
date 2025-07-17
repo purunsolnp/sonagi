@@ -51,7 +51,7 @@ def check():
             # 1. 급성기 종료일 및 상태 안내 통합
             acute_info = f"""
             <h3>📅 급성기 종료일: {acute_end_date.strftime('%Y-%m-%d')} (초진일 {visit_date_parsed.strftime('%Y-%m-%d')} 기준 6개월 후)</h3>
-            <p>{'<b style=\'color:blue;\'>급성기 진행 중</b>' if today_or_target < acute_end_date else '<b style=\'color:green;\'>급성기 종료됨 현재 만성기 입니다.</b>'}</p>
+            <p>{'<b style="color:blue;">급성기 진행 중</b>' if today_or_target < acute_end_date else '<b style="color:green;">급성기 종료됨 현재 만성기 입니다.</b>'}</p>
             """
             # 2. 만성기 관리 구간 (이전, 현재, 다음 구간)
             followup_start = acute_end_date + timedelta(days=1)
