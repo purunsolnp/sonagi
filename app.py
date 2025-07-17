@@ -54,34 +54,37 @@ def check():
             <p>{'<b style="color:blue;">급성기 진행 중</b>' if today_or_target < acute_end_date else '<b style="color:green;">급성기 종료됨 현재 만성기 입니다.</b>'}</p>
             """
             # 2. 만성기 관리 구간 (이전, 현재, 다음 구간)
-            followup_start = acute_end_date + timedelta(days=1)
-            periods = []
-            cur_start = followup_start
-            idx = 0
-            found_idx = None
-            max_iterations = 1000  # 안전장치: 최대 1000번 반복
-            while idx < max_iterations:
-                cur_end = cur_start + relativedelta(months=3) - timedelta(days=1)
-                periods.append((cur_start, cur_end))
-                if cur_start <= today_or_target <= cur_end:
-                    found_idx = idx
-                    break
-                cur_start = cur_end + timedelta(days=1)
-                idx += 1
-            
-            # 안전장치: 만약 찾지 못했다면 마지막 구간을 사용
-            if found_idx is None:
-                found_idx = len(periods) - 1
-            prev_period = periods[found_idx-1] if found_idx-1 >= 0 else None
-            cur_period = periods[found_idx]
-            next_period = (cur_period[1] + timedelta(days=1), cur_period[1] + relativedelta(months=3))
-            chronic_info = f"""
-            <h3>🩺 만성기 관리 구간</h3>
-            """
-            if prev_period:
-                chronic_info += f"이전 구간: {prev_period[0].strftime('%Y-%m-%d')} ~ {prev_period[1].strftime('%Y-%m-%d')}<br>"
-            chronic_info += f"<b>현재 구간: {cur_period[0].strftime('%Y-%m-%d')} ~ {cur_period[1].strftime('%Y-%m-%d')}</b><br>"
-            chronic_info += f"다음 구간: {next_period[0].strftime('%Y-%m-%d')} ~ {next_period[1].strftime('%Y-%m-%d')}<br>"
+            chronic_info = ""
+            if today_or_target > acute_end_date:
+                followup_start = acute_end_date + timedelta(days=1)
+                periods = []
+                cur_start = followup_start
+                idx = 0
+                found_idx = None
+                max_iterations = 1000  # 안전장치: 최대 1000번 반복
+                while idx < max_iterations:
+                    cur_end = cur_start + relativedelta(months=3) - timedelta(days=1)
+                    periods.append((cur_start, cur_end))
+                    if cur_start <= today_or_target <= cur_end:
+                        found_idx = idx
+                        break
+                    cur_start = cur_end + timedelta(days=1)
+                    idx += 1
+                # 안전장치: 만약 찾지 못했다면 마지막 구간을 사용
+                if found_idx is None:
+                    found_idx = len(periods) - 1
+                prev_period = periods[found_idx-1] if found_idx-1 >= 0 else None
+                cur_period = periods[found_idx]
+                next_period = (cur_period[1] + timedelta(days=1), cur_period[1] + relativedelta(months=3))
+                chronic_info = f"""
+                <h3>🩺 만성기 관리 구간 (진료일 기준)</h3>
+                """
+                if prev_period:
+                    chronic_info += f"이전 구간: {prev_period[0].strftime('%Y-%m-%d')} ~ {prev_period[1].strftime('%Y-%m-%d')}<br>"
+                chronic_info += f"<b>진료일이 속한 현재 구간: {cur_period[0].strftime('%Y-%m-%d')} ~ {cur_period[1].strftime('%Y-%m-%d')}</b><br>"
+                chronic_info += f"다음 구간: {next_period[0].strftime('%Y-%m-%d')} ~ {next_period[1].strftime('%Y-%m-%d')}<br>"
+            else:
+                chronic_info = "<h3>🩺 만성기 관리 구간</h3><b>아직 만성기가 시작되지 않았습니다.</b><br>"
             result_text += acute_info + chronic_info
             # --- 끝 ---
 
