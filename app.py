@@ -59,7 +59,8 @@ def check():
             cur_start = followup_start
             idx = 0
             found_idx = None
-            while True:
+            max_iterations = 1000  # 안전장치: 최대 1000번 반복
+            while idx < max_iterations:
                 cur_end = cur_start + relativedelta(months=3) - timedelta(days=1)
                 periods.append((cur_start, cur_end))
                 if cur_start <= today_or_target <= cur_end:
@@ -67,6 +68,10 @@ def check():
                     break
                 cur_start = cur_end + timedelta(days=1)
                 idx += 1
+            
+            # 안전장치: 만약 찾지 못했다면 마지막 구간을 사용
+            if found_idx is None:
+                found_idx = len(periods) - 1
             prev_period = periods[found_idx-1] if found_idx-1 >= 0 else None
             cur_period = periods[found_idx]
             next_period = (cur_period[1] + timedelta(days=1), cur_period[1] + relativedelta(months=3))
@@ -125,12 +130,15 @@ def acute_phase():
         followup_start = acute_end_date + timedelta(days=1)
         periods = []
         cur_start = followup_start
-        while True:
+        max_iterations = 1000  # 안전장치: 최대 1000번 반복
+        iteration_count = 0
+        while iteration_count < max_iterations:
             cur_end = cur_start + relativedelta(months=3) - timedelta(days=1)
             periods.append((cur_start, cur_end))
             if today <= cur_end:
                 break
             cur_start = cur_end + timedelta(days=1)
+            iteration_count += 1
         # 이전, 현재, 다음 구간만 추출
         idx = len(periods) - 1
         prev_period = periods[idx-1] if idx-1 >= 0 else None
